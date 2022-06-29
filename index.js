@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 const cors = require('cors')
 const port = process.env.PORT || 5000;
@@ -17,11 +17,34 @@ async function run() {
     try {
         await client.connect();
         const todoCollection = client.db("todo-list").collection('todo');
-        console.log("connected")
+
+        app.get('/task', async (req, res) => {
+            const query = {}
+            const cursor = todoCollection.find(query)
+            const result = await cursor.toArray()
+            res.send(result)
+        })
 
         app.post('/addTask', async (req, res) => {
             const task = req.body;
             const result = await todoCollection.insertOne(task)
+            res.send(result)
+        })
+        app.delete('/task/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) }
+            const result = await todoCollection.deleteOne(query)
+            res.send(result)
+        })
+        app.put('/task/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) }
+            const updateDoc = {
+                $set: {
+                    status: "complete"
+                }
+            }
+            const result = await todoCollection.updateOne(filter, updateDoc);
             res.send(result)
         })
 
