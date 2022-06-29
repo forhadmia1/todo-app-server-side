@@ -18,8 +18,9 @@ async function run() {
         await client.connect();
         const todoCollection = client.db("todo-list").collection('todo');
 
-        app.get('/task', async (req, res) => {
-            const query = {}
+        app.get('/task/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email }
             const cursor = todoCollection.find(query)
             const result = await cursor.toArray()
             res.send(result)
